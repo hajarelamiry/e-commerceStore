@@ -4,28 +4,24 @@ from django.db import models
 from django.contrib.auth.models import User,auth
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Customer,Product
+from .models import *
 import datetime
 from project.utils import cartData,cookieCart,guestOrder
 
 
 # Create your views here.
 def store(request):
-    data = cartData(request)
-    cartItems = data['cartItems']
-    order = data['order']
-    items = data['items']
-    products = Product.objects.all()
-    context = {'products':products, 'cartItems':cartItems}
+    products=Product.objects.all()
+    context={'products':products}
     return render(request, 'store.html', context)
 
-@login_required(login_url='login')
+# @login_required(login_url='login')
 def checkout(request):
     context={}
     return render(request,'checkout.html',context)
 
 
-def login(request):
+# def login(request):
     if request.method=="POST":
         username=request.POST["username"]
         password=request.POST["password"]
@@ -40,7 +36,7 @@ def login(request):
       return render(request,'login.html')
 
 
-def signup(request):
+# def signup(request):
     
     if request.method=='POST':
         username=request.POST['username']
@@ -71,14 +67,17 @@ def signup(request):
     else:
         return render(request,'signup.html')
     
-@login_required(login_url='login')
+# @login_required(login_url='login')
 def main(request):
     context={}
     return render(request,'main.html',context)
 
 
-@login_required(login_url='login')
+# @login_required(login_url='login')
 def cart(request):
-    context={}
-    return render(request,'cart.html',context)
+        customer=request.user.customer
+        order, created=Order.objects.get_or_create(customer=customer,complete=False)
+        items=order.orderitem_set.all()
+        context={'items':items}
+        return render(request,'cart.html',context)
 
